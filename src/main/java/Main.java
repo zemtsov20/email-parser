@@ -1,0 +1,27 @@
+import emailparser.Parser;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        Scanner in = new Scanner(System.in);
+        HashSet<String> allEmails = new HashSet<>();
+        String url;
+        int depth = 0;
+
+        System.out.print("Enter url: ");
+        url = in.next();
+        System.out.print("Enter search depth: ");
+        depth = in.nextInt();
+
+        Parser.parse(allEmails, url, depth);
+
+        System.out.println("Emails list:");
+        for (String str : allEmails) {
+            System.out.println(str);
+        }
+
+    }
+}
