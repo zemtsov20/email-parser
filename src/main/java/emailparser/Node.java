@@ -1,13 +1,6 @@
 package emailparser;
 
-public class Node {
-    private String url;
-    private int depth;
-
-    public Node(String url, int depth){
-        this.url = url;
-        this.depth = depth;
-    }
+public record Node(String url, int depth) {
 
     public String getUrl() {
         return url;
