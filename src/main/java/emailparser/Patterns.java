@@ -5,8 +5,8 @@ import java.util.regex.Pattern;
 public class Patterns {
 //    public static final Pattern emailPattern
 //            = Pattern.compile("[\\w.]+@+\\w+\\.\\w+");
-    public static final Pattern URL_TOP
-            = Pattern.compile("\\w+\\.\\w+(/|$)");
+    public static final Pattern FIRST_AND_SECOND_DOMAIN
+            = Pattern.compile("https://[^/]*?(\\w+\\.\\w+)/", Pattern.CASE_INSENSITIVE);
 
     public static final Pattern EMAIL_ADDRESS
             = Pattern.compile(
@@ -44,4 +44,7 @@ public class Patterns {
                     + "(\\/(?:(?:[" + GOOD_IRI_CHAR + "\\;\\/\\?\\:\\@\\&\\=\\#\\~"  // plus option query params
                     + "\\-\\.\\+\\!\\*\\'\\(\\)\\,\\_])|(?:\\%[a-fA-F0-9]{2}))*)?"
                     + "(?:\\b|$)");
+
+
+    public static final Pattern WEB_URL2 = Pattern.compile("<a\\W+[^>]*\\W+href\\W*=\\W*[\"']([^\"']+)[\"'][^>]*>");
 }

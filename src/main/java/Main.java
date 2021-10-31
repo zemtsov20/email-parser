@@ -11,8 +11,9 @@ public class Main {
         String url;
         int depth = 0;
 
-        System.out.print("Enter url: ");
-        url = in.next();
+//        System.out.print("Enter url: ");
+//        url = in.next();
+        url = "https://en.wikipedia.org/wiki/Jakarta_Mail";
         System.out.print("Enter search depth: ");
         depth = in.nextInt();
 

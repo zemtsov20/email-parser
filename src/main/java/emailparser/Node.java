@@ -1,13 +1,15 @@
 package emailparser;
 
-public record Node(String url, int depth) {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.ToString;
 
-    public String getUrl() {
-        return url;
-    }
+@Getter
+@AllArgsConstructor
+@ToString
+public class Node {
 
-    public int getDepth() {
-        return depth;
-    }
+    private final String url;
+    private final int depth;
 
 }
