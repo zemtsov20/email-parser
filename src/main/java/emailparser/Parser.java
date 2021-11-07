@@ -1,6 +1,5 @@
 package emailparser;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -9,8 +8,9 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Queue;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 
 import static emailparser.Patterns.FIRST_AND_SECOND_DOMAIN;
@@ -75,12 +75,40 @@ public class Parser {
                     tempUrl = urlMatcher.group(3).equals("//") ? "https:" + tempUrl : tempUrl;
                     Node tempNode = new Node(tempUrl, node1.getDepth() + 1);
                     urlQueue.push(tempNode);
-                }
-                else if(urlMatcher.group(3).equals("/")) {
+                } else if (urlMatcher.group(3).equals("/")) {
                     Node tempNode = new Node(addToHref + tempUrl, node1.getDepth() + 1);
                     urlQueue.push(tempNode);
                 }
             }
         }
     }
+}
+
+class Temp {
+
+    class Node {
+        String name;
+    }
+
+    void example() {
+
+        Function<String, String> url2content = null;
+
+        Function<String, List<String>> content2urls = null;
+
+        Node root = null;
+
+        Queue<Node> todo = null;
+
+        do {
+            var content = url2content.apply(root.name);
+            var children = content2urls.apply(content);
+            visit(content);
+        } while (true);
+    }
+
+    private void visit(String content) {
+        //extract emails
+    }
+
 }
