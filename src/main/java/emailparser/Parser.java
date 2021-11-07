@@ -22,18 +22,18 @@ public class Parser {
 
         Matcher firstSecondDomain = FIRST_AND_SECOND_DOMAIN.matcher(url);
         if (!firstSecondDomain.find()) {
-//            System.out.println("Wrong url!");
             throw new IllegalArgumentException("Your url '" + url + "' does not match pattern " + FIRST_AND_SECOND_DOMAIN);
-//            return;
         }
-        String site = firstSecondDomain.group(1);
-        System.out.println("top url: " + site);
+        String siteToMatch = firstSecondDomain.group(1);
+        String addToHref = firstSecondDomain.group(0);
+        System.out.println("top url: " + siteToMatch);
+        System.out.println("adding: " + addToHref);
         urlQueue.push(node);
         while (!urlQueue.isEmpty()) { // TODO see 68 str [done]
             var node1 = urlQueue.pollLast();
             System.out.println("Now you are in: " + node1.getUrl() + ", depth: " + node1.getDepth());
             try {
-                htmlContent = IOUtils.toString(new URL(node1.getUrl()), StandardCharsets.UTF_8); // TODO rework with IOUtils [done]
+                htmlContent = IOUtils.toString(new URL(node1.getUrl()), StandardCharsets.UTF_8);
             } catch (MalformedURLException e) {
                 System.out.println("Wrong url! " + e.getMessage() + " for url " + node1.getUrl());
             }
@@ -51,11 +51,20 @@ public class Parser {
             if (node1.getDepth() == depth) {
                 continue;
             }
-            Matcher urlMatcher = Patterns.WEB_URL.matcher(htmlContent);
+            Matcher urlMatcher = Patterns.WEB_URL2.matcher(htmlContent);
             while (urlMatcher.find()) {
+                //assert urlMatcher.group() != null;
 //                if WEB_URL2 then urlMatcher.group(1)
-                if (urlMatcher.group() != null && urlMatcher.group().contains(site)) {           // TODO use reg. exp. for urls [done]
-                    Node tempNode = new Node(urlMatcher.group(), node1.getDepth() + 1);   // TODO don't put if no need [done]
+                String tempUrl = urlMatcher.group(2);
+                firstSecondDomain = FIRST_AND_SECOND_DOMAIN.matcher(tempUrl);
+                if (firstSecondDomain.find() && firstSecondDomain.group(1).equals(siteToMatch)) {
+                    // adding protocol
+                    tempUrl = urlMatcher.group(3).equals("//") ? "https:" + tempUrl : tempUrl;
+                    Node tempNode = new Node(tempUrl, node1.getDepth() + 1);
+                    urlQueue.push(tempNode);
+                }
+                else if(urlMatcher.group(3).equals("/")) {
+                    Node tempNode = new Node(addToHref + tempUrl, node1.getDepth() + 1);
                     urlQueue.push(tempNode);
                 }
             }
