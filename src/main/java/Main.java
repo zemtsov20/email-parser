@@ -13,8 +13,11 @@ public class Main {
 
 
         System.out.print("Enter url: ");
-        url = in.next();
-        //url = "https://en.wikipedia.org/wiki/Jakarta_Mail";
+//        url = in.next();
+        url = "https://en.wikipedia.org/wiki/Jakarta_Mail";
+//        url = "https://mvideo.ru/";
+//        url = "https://www2.deloitte.com/";
+//        url = ""
         System.out.print("Enter search depth: ");
         depth = in.nextInt();
 
