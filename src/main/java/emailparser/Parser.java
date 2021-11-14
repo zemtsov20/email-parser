@@ -44,6 +44,18 @@ public class Parser {
         final String siteToMatch = firstSecondDomain.group(1);
         System.out.println("top url: " + siteToMatch);
 
+
+        int d = 3;
+        Queue<String> queue = null;
+        java.util.function.Function<String, List<String>> f = null;
+        do {
+            queue.forEach(e -> doSomeBusiness(e));
+            queue.forEach(e -> queue.addAll(f.apply(e)));
+        } while (d-- > 0);
+
+
+
+
         Predicate <String> isMatchesSite = str -> str.equals(siteToMatch);
 
         urlQueue.push(new Node(url, 0));
