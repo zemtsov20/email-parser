@@ -16,12 +16,12 @@ public class Main {
 //        url = in.next();
         url = "https://en.wikipedia.org/wiki/Jakarta_Mail";
 //        url = "https://mvideo.ru/";
-//        url = "https://www2.deloitte.com/";
+        url = "https://www2.deloitte.com/";
 //        url = ""
         System.out.print("Enter search depth: ");
         depth = in.nextInt();
 
-        Parser.parse(allEmails, url, depth);
+        allEmails = Parser.parse(url, depth);
 
         System.out.println("Emails list:");
         for (String str : allEmails) {
