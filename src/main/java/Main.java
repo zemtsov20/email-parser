@@ -1,22 +1,22 @@
 import emailparser.Parser;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
-        HashSet<String> allEmails = new HashSet<>();
+        Set<String> allEmails;
         String url;
         int depth;
 
 
-        System.out.print("Enter url: ");
+//        System.out.print("Enter url: ");
 //        url = in.next();
         url = "https://en.wikipedia.org/wiki/Jakarta_Mail";
-//        url = "https://mvideo.ru/";
-        url = "https://www2.deloitte.com/";
+//        url = "https://www.mvideo.ru/"; // not working
+//        url = "https://www2.deloitte.com/";
 //        url = ""
         System.out.print("Enter search depth: ");
         depth = in.nextInt();

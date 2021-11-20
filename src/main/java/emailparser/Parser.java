@@ -7,34 +7,46 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 
 import static emailparser.Patterns.FIRST_AND_SECOND_DOMAIN;
 
-public class Parser {
+@FunctionalInterface
+interface FunctionOfThree<U, T, V> {
+    V apply(U u, T t, V v);
+}
 
-    //https://en.wikipedia.org/wiki/Coupling_(computer_programming)
-    public static HashSet<String> parse(String url, int depth) {
-        ArrayDeque<Node> urlQueue = new ArrayDeque<>();
+public class Parser {
+    public static Set<String> parse(String url, int depth) {
+        Deque<String> urlQueue = new ArrayDeque<>();
         Set<String> addedUrls = new HashSet<>();
-        HashSet<String> allEmails = new HashSet<>();
+        Set<String> allEmails = new HashSet<>();
 
         // func that takes url and returns html of this page
-        Function <String, String> url2content = str -> {
+        java.util.function.Function<String, String> url2content = str -> {
             String htmlContent = null;
             try {
                 htmlContent =  IOUtils.toString(new URL(str), StandardCharsets.UTF_8);
-                //TODO: you transform string "https://en.wikipedia.org/" into "<!DOCTYPE html><html class="client-nojs" lang="en" dir="ltr">..."
-                //TODO: java.util.function.Function
-                //TODO: Function<Node, String> node2content = n -> IOUtils.toString(new URL(n.getUrl()), StandardCharsets.UTF_8);
             } catch (MalformedURLException e) {
                 System.out.println("Wrong url! " + e.getMessage() + " for url " + str);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             return htmlContent;
+        };
+
+        // func that returns set of emails on page
+        java.util.function.Function<String, Set<String>> getEmails = pageHtml -> {
+            if(pageHtml == null)
+                return null;
+            Set<String> newEmails = new HashSet<>();
+            Matcher emailMatcher = Patterns.EMAIL_ADDRESS.matcher(pageHtml);
+            while (emailMatcher.find()) {
+                newEmails.add(emailMatcher.group());
+            }
+
+            return newEmails;
         };
 
         Matcher firstSecondDomain = FIRST_AND_SECOND_DOMAIN.matcher(url);
@@ -44,118 +56,50 @@ public class Parser {
         final String siteToMatch = firstSecondDomain.group(1);
         System.out.println("top url: " + siteToMatch);
 
+        // urls adding function
+        FunctionOfThree<String, String, Deque<String>> getUrls = (currUrl, pageHtml, newUrls) -> {
+            //newUrls.poll();
+            if(pageHtml == null)
+                return null;
 
-        int d = 3;
-        Queue<String> queue = null;
-        java.util.function.Function<String, List<String>> f = null;
-        do {
-            queue.forEach(e -> doSomeBusiness(e));
-            queue.forEach(e -> queue.addAll(f.apply(e)));
-        } while (d-- > 0);
+            Predicate<String> isMatchesSite = str -> str.equals(siteToMatch);
 
+            Matcher urlMatcher = Patterns.WEB_URL2.matcher(pageHtml);
 
-
-
-        Predicate <String> isMatchesSite = str -> str.equals(siteToMatch);
-
-        urlQueue.push(new Node(url, 0));
-        //TODO: you can go by same links more than 2 times [done]
-        //TODO: you should know which pages you've already visited [done]
-        while (!urlQueue.isEmpty()) {
-            var node1 = urlQueue.pollLast();
-            System.out.println("Now you are in: " + node1.getUrl() + ", depth: " + node1.getDepth());
-            Matcher fullUrl = FIRST_AND_SECOND_DOMAIN.matcher(node1.getUrl());
+            Matcher fullUrl = FIRST_AND_SECOND_DOMAIN.matcher(currUrl);
             if (!fullUrl.find()) {
-                throw new IllegalArgumentException("Your url '" + url + "' does not match pattern " + FIRST_AND_SECOND_DOMAIN);
+                throw new IllegalArgumentException("Your url '" + currUrl + "' does not match pattern " + FIRST_AND_SECOND_DOMAIN);
             }
             String addToHref = fullUrl.group(0);
-            System.out.println("\tadding: " + addToHref);//TODO: may vary based on the page [done]
-            String htmlContent = url2content.apply(node1.getUrl());
-            if (htmlContent == null) {
-                continue;
+
+            while (urlMatcher.find()) {
+                String tempUrl = urlMatcher.group(2);
+                Matcher newFirstSecondDomain = FIRST_AND_SECOND_DOMAIN.matcher(tempUrl);
+                if (newFirstSecondDomain.find() && isMatchesSite.test(newFirstSecondDomain.group(1))) {
+                    tempUrl = urlMatcher.group(3).equals("//") ? "https:" + tempUrl : tempUrl;
+                    if(!addedUrls.contains(tempUrl)){
+                        newUrls.push(tempUrl);
+                        addedUrls.add(tempUrl);
+                    }
+                } else if (urlMatcher.group(3).equals("/")) {
+                    if(!addedUrls.contains(addToHref + tempUrl)) {
+                        newUrls.push(addToHref + tempUrl);
+                        addedUrls.add(addToHref + tempUrl);
+                    }
+                }
             }
 
-            // searching and adding emails on page
-            Parser.emailsFromPage(allEmails, htmlContent);
 
-            // searching urls on page, adding in queue
-            if (node1.getDepth() == depth) {
-                continue;
-            }
+            return newUrls;
+        };
 
-            Matcher urlMatcher = Patterns.WEB_URL2.matcher(htmlContent);
-            //TODO: rework to java.util.function.Function<String, List<String>>
-            Parser.urlsFromPage(urlQueue, addedUrls, htmlContent, siteToMatch, addToHref, node1.getDepth());
-        }
+        urlQueue.push(url);
+        do {
+            urlQueue.forEach(e -> allEmails.addAll(getEmails.apply(url2content.apply(e))));
+            if(depth > 0)
+                urlQueue.forEach(e -> getUrls.apply(e, url2content.apply(e), urlQueue));
+        } while (depth-- > 0);
 
         return allEmails;
     }
-
-    public static void emailsFromPage (HashSet<String> allEmails, String pageHtml) {
-        Matcher emailMatcher = Patterns.EMAIL_ADDRESS.matcher(pageHtml);
-        while (emailMatcher.find()) {
-            //TODO: rework to java.util.function.Function<String, List<String>> [done?]
-            allEmails.add(emailMatcher.group());
-        }
-    }
-
-    public static void urlsFromPage (Deque<Node> urlQueue, Set<String> addedUrls,
-                                     String htmlContent, String siteToMatch, String addToHref, int depth) {
-        Predicate <String> isMatchesSite = str -> str.equals(siteToMatch);
-
-        Matcher urlMatcher = Patterns.WEB_URL2.matcher(htmlContent);
-
-        //TODO: rework to java.util.function.Function<String, List<String>>
-        while (urlMatcher.find()) {
-            String tempUrl = urlMatcher.group(2);
-            Matcher firstSecondDomain = FIRST_AND_SECOND_DOMAIN.matcher(tempUrl);
-            if (firstSecondDomain.find() && isMatchesSite.test(firstSecondDomain.group(1))) {
-                //TODO: "firstSecondDomain.group(1).equals(siteToMatch)" - this is clause, filter
-                //TODO: try to rework to java.util.function.Predicate or some other filter
-                //Predicate<String> isKeep = str -> str.contains("www.wiki.org");
-                // adding protocol
-                tempUrl = urlMatcher.group(3).equals("//") ? "https:" + tempUrl : tempUrl;
-                if(!addedUrls.contains(tempUrl)){
-                    Node tempNode = new Node(tempUrl, depth + 1);
-                    urlQueue.push(tempNode);
-                    addedUrls.add(tempUrl);
-                }
-            } else if (urlMatcher.group(3).equals("/")) {
-                if(!addedUrls.contains(addToHref + tempUrl)) {
-                    Node tempNode = new Node(addToHref + tempUrl, depth + 1);
-                    urlQueue.push(tempNode);
-                    addedUrls.add(addToHref + tempUrl);
-                }
-            }
-        }
-    }
 }
-//
-//class Temp {
-//
-//    class Node {
-//        String name;
-//    }
-//
-//    void example() {
-//
-//        Function<String, String> url2content = null;
-//
-//        Function<String, List<String>> content2urls = null;
-//
-//        Node root = null;
-//
-//        Queue<Node> todo = null;
-//
-//        do {
-//            var content = url2content.apply(root.name);
-//            var children = content2urls.apply(content);
-//            visit(content);
-//        } while (true);
-//    }
-//
-//    private void visit(String content) {
-//        //extract emails
-//    }
-//
-//}
