@@ -22,7 +22,6 @@ public class Main {
         depth = in.nextInt();
 
         allEmails = Parser.parse(url, depth);
-
         System.out.println("Emails list:");
         for (String str : allEmails) {
             System.out.println(str);

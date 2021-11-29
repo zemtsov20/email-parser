@@ -7,14 +7,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 
 import static emailparser.Patterns.FIRST_AND_SECOND_DOMAIN;
 
 @FunctionalInterface
-interface FunctionOfThree<U, T, V> {
-    V apply(U u, T t, V v);
+interface TriFunction<F, S, T> {
+    void apply(F f, S s, T t);
 }
 
 public class Parser {
@@ -24,7 +25,7 @@ public class Parser {
         Set<String> allEmails = new HashSet<>();
 
         // func that takes url and returns html of this page
-        java.util.function.Function<String, String> url2content = str -> {
+        Function<String, String> url2content = str -> {
             String htmlContent = null;
             try {
                 htmlContent =  IOUtils.toString(new URL(str), StandardCharsets.UTF_8);
@@ -37,7 +38,7 @@ public class Parser {
         };
 
         // func that returns set of emails on page
-        java.util.function.Function<String, Set<String>> getEmails = pageHtml -> {
+        Function<String, Set<String>> getEmails = pageHtml -> {
             if(pageHtml == null)
                 return null;
             Set<String> newEmails = new HashSet<>();
@@ -57,10 +58,10 @@ public class Parser {
         System.out.println("top url: " + siteToMatch);
 
         // urls adding function
-        FunctionOfThree<String, String, Deque<String>> getUrls = (currUrl, pageHtml, newUrls) -> {
+        TriFunction<String, String, Deque<String>> getUrls = (currUrl, pageHtml, newUrls) -> {
             //newUrls.poll();
             if(pageHtml == null)
-                return null;
+                return;
 
             Predicate<String> isMatchesSite = str -> str.equals(siteToMatch);
 
@@ -88,9 +89,6 @@ public class Parser {
                     }
                 }
             }
-
-
-            return newUrls;
         };
 
         urlQueue.push(url);
