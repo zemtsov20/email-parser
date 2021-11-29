@@ -13,10 +13,7 @@ import java.util.regex.Matcher;
 
 import static emailparser.Patterns.FIRST_AND_SECOND_DOMAIN;
 
-@FunctionalInterface
-interface TriFunction<F, S, T> {
-    void apply(F f, S s, T t);
-}
+
 
 public class Parser {
     public static Set<String> parse(String url, int depth) {
