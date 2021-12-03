@@ -1,4 +1,4 @@
-package emailparser;
+package com.emailparser;
 
 import java.util.regex.Pattern;
 
@@ -20,7 +20,6 @@ public class Patterns {
                     ")+"
     );
 
-//    public static final Pattern WEB_URL2 = Pattern.compile("<a\\W+[^>]*\\W+href\\W*=\\W*[\"']([^\"']+)[\"'][^>]*>");
     // gr 1 - tag, gr 2 - url, gr 3 - protocol
     public static final Pattern WEB_URL2
             = Pattern.compile("<(a|link|area)\\W?[^>]*\\W+href\\W*=\\W*[\"']((https://|http://|//|/)+[^\"']+)[\"'][^>]*>");
