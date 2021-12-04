@@ -17,6 +17,18 @@ interface FunctionOfThree<U, T, V> {
     V apply(U u, T t, V v);
 }
 
+interface IParser<F, T>{
+    T parse(F from);
+}
+
+class ContextToLinksParser implements IParser<String, Set<String>>{
+
+    @Override
+    public Set<String> parse(String from) {
+        return null;
+    }
+}
+
 public class Parser {
     public static Set<String> parse(String url, int depth) {
         Deque<String> urlQueue = new ArrayDeque<>();
@@ -37,6 +49,8 @@ public class Parser {
         };
 
         // func that returns set of emails on page
+        // parses content and returns emails
+        // Parser Transformer Mapper
         java.util.function.Function<String, Set<String>> getEmails = pageHtml -> {
             if(pageHtml == null)
                 return null;
