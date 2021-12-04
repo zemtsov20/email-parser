@@ -1,4 +1,4 @@
-import emailparser.Parser;
+import com.emailparser.Parser;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -12,14 +12,13 @@ public class Main {
 
 //        System.out.print("Enter url: ");
 //        url = in.next();
-        url = "https://en.wikipedia.org/wiki/Jakarta_Mail";
-//        url = "https://www.mvideo.ru/"; // not working
+//        url = "https://en.wikipedia.org/wiki/Jakarta_Mail";
+        url = "https://www.mvideo.ru/"; // not working
 //        url = "https://www2.deloitte.com/";
 //        url = ""
         System.out.print("Enter search depth: ");
         depth = in.nextInt();
-
-        allEmails = Parser.parse(url, depth);
+        allEmails = new Parser().extract(url, depth);
         System.out.println("Emails list:");
         for (String str : allEmails) {
             System.out.println(str);

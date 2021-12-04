@@ -1,4 +1,4 @@
-package emailparser;
+package com.emailparser;
 
 @FunctionalInterface
 public interface TriFunction<F, S, T> {
